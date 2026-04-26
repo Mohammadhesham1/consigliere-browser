@@ -3,7 +3,6 @@ package com.eldon.consigliere
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.webkit.*
 import android.widget.EditText
@@ -23,23 +22,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnHome: ImageButton
     private lateinit var btnMenu: ImageButton
 
-    private lateinit var adBlocker: AdBlocker
-    private lateinit var contentFilter: ContentFilter
-
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        adBlocker = AdBlocker(this)
-        contentFilter = ContentFilter(this)
 
         initViews()
         setupWebView()
         setupUrlBar()
         setupNavButtons()
 
-        // افتح صفحة البداية
         loadNewTab()
     }
 
@@ -64,87 +56,51 @@ class MainActivity : AppCompatActivity() {
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
-            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            safeBrowsingEnabled = true
-            // منع التتبع
-            setGeolocationEnabled(false)
-            userAgentString = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+            allowFileAccess = true
+            mediaPlaybackRequiresUserGesture = false
+            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+        }
+
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
         }
 
         webView.webViewClient = object : WebViewClient() {
 
-            override fun shouldInterceptRequest(
-                view: WebView,
-                request: WebResourceRequest
-            ): WebResourceResponse? {
-                // فحص المحتوى المحظور
-                if (contentFilter.isBlocked(request.url.toString())) {
-                    return WebResourceResponse("text/html", "UTF-8", null)
-                }
-                // فحص الإعلانات
-                return adBlocker.shouldBlock(request)
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                return false // كل حاجة تفتح جوه التطبيق
             }
 
             override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.isVisible = true
-                urlBar.setText(url)
+                if (!url.startsWith("file://")) urlBar.setText(url)
                 updateNavButtons()
-
-                // فحص الصفحة الكاملة
-                if (contentFilter.isBlocked(url)) {
-                    view.stopLoading()
-                    contentFilter.showBlockedPage(view)
-                }
             }
 
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 progressBar.isVisible = false
-                urlBar.setText(url)
+                if (!url.startsWith("file://")) urlBar.setText(url)
                 updateNavButtons()
-
-                // حقن CSS لإخفاء الإعلانات المتبقية
-                injectAdBlockCSS(view)
             }
         }
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 progressBar.progress = newProgress
+                progressBar.isVisible = newProgress < 100
             }
         }
-    }
-
-    private fun injectAdBlockCSS(webView: WebView) {
-        val css = """
-            [id*='ad'],[class*='ad'],[id*='banner'],[class*='banner'],
-            [id*='popup'],[class*='popup'],[id*='overlay'],[class*='overlay'],
-            [id*='sponsor'],[class*='sponsor'],iframe[src*='ad'],
-            ins.adsbygoogle, #google_ads_frame, .advert, .advertisement {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                width: 0 !important;
-                opacity: 0 !important;
-            }
-        """.replace("\n", " ")
-
-        val js = """
-            var style = document.createElement('style');
-            style.type = 'text/css';
-            style.innerHTML = '$css';
-            document.head.appendChild(style);
-        """.trimIndent()
-
-        webView.evaluateJavascript(js, null)
     }
 
     private fun setupUrlBar() {
         urlBar.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_GO ||
-                event?.keyCode == KeyEvent.KEYCODE_ENTER) {
-                navigateTo(urlBar.text.toString())
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+                navigateTo(urlBar.text.toString().trim())
                 true
             } else false
         }
@@ -155,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         btnForward.setOnClickListener { if (webView.canGoForward()) webView.goForward() }
         btnRefresh.setOnClickListener { webView.reload() }
         btnHome.setOnClickListener { loadNewTab() }
-        btnMenu.setOnClickListener { showMenu() }
+        btnMenu.setOnClickListener { }
     }
 
     private fun navigateTo(input: String) {
@@ -168,19 +124,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadNewTab() {
-        // صفحة البداية المخصصة
         webView.loadUrl("file:///android_asset/newtab.html")
     }
 
     private fun updateNavButtons() {
-        btnBack.isEnabled = webView.canGoBack()
         btnBack.alpha = if (webView.canGoBack()) 1f else 0.4f
-        btnForward.isEnabled = webView.canGoForward()
         btnForward.alpha = if (webView.canGoForward()) 1f else 0.4f
-    }
-
-    private fun showMenu() {
-        // TODO: قائمة الإعدادات
     }
 
     override fun onBackPressed() {
