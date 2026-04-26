@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Consigliere</string>
+    <string name="search_hint">ابحث أو اكتب رابط</string>
+    <string name="blocked_title">محتوى محظور</string>
+    <string name="blocked_message">هذا الموقع محظور لحمايتك</string>
+</resources>

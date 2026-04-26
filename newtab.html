@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consigliere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0A0A0F;
+            color: #E8E8E8;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(10,10,15,0.3) 0%,
+                rgba(10,10,15,0.7) 60%,
+                rgba(10,10,15,0.95) 100%
+            );
+            z-index: 1;
+        }
+
+        .wallpaper {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-image: url('https://source.unsplash.com/random/1080x1920/?dark,minimal,architecture');
+            z-index: 0;
+            transition: opacity 1s ease;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 20px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 13px;
+            letter-spacing: 4px;
+            color: #C9A84C;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .time {
+            font-size: 64px;
+            font-weight: 300;
+            letter-spacing: -2px;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .date {
+            font-size: 14px;
+            color: #888899;
+            margin-top: 6px;
+        }
+
+        .daily-card {
+            background: rgba(26, 26, 40, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: #C9A84C;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .card-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #D0D0E0;
+        }
+
+        .shortcuts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .shortcut {
+            background: rgba(26, 26, 40, 0.8);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 14px 8px;
+            text-align: center;
+            text-decoration: none;
+            color: #E8E8E8;
+            transition: all 0.2s;
+        }
+
+        .shortcut:active {
+            transform: scale(0.95);
+            background: rgba(201, 168, 76, 0.15);
+        }
+
+        .shortcut-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .shortcut-name {
+            font-size: 11px;
+            color: #888899;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 16px 0;
+        }
+
+        .section-title {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #555566;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wallpaper" id="wallpaper"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="content">
+        <div class="header">
+            <div class="logo">Consigliere</div>
+            <div class="time" id="time">00:00</div>
+            <div class="date" id="date"></div>
+        </div>
+
+        <div class="daily-card">
+            <div class="card-label">قصيدة اليوم</div>
+            <div class="card-content" id="poem">
+                وما الحياةُ سوى حلمٌ يمرُّ بنا<br>
+                نصحو على وجعٍ ننسى به الألما
+            </div>
+        </div>
+
+        <div class="daily-card">
+            <div class="card-label">خبر اليوم</div>
+            <div class="card-content" id="news">
+                جاري تحميل الأخبار...
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title">اختصارات</div>
+        <div class="shortcuts">
+            <a href="https://google.com" class="shortcut">
+                <div class="shortcut-icon">🔍</div>
+                <div class="shortcut-name">جوجل</div>
+            </a>
+            <a href="https://youtube.com" class="shortcut">
+                <div class="shortcut-icon">▶️</div>
+                <div class="shortcut-name">يوتيوب</div>
+            </a>
+            <a href="https://chat.openai.com" class="shortcut">
+                <div class="shortcut-icon">🤖</div>
+                <div class="shortcut-name">ChatGPT</div>
+            </a>
+            <a href="https://claude.ai" class="shortcut">
+                <div class="shortcut-icon">✨</div>
+                <div class="shortcut-name">Claude</div>
+            </a>
+            <a href="https://twitter.com" class="shortcut">
+                <div class="shortcut-icon">𝕏</div>
+                <div class="shortcut-name">تويتر</div>
+            </a>
+            <a href="https://instagram.com" class="shortcut">
+                <div class="shortcut-icon">📸</div>
+                <div class="shortcut-name">انستجرام</div>
+            </a>
+            <a href="https://github.com" class="shortcut">
+                <div class="shortcut-icon">💻</div>
+                <div class="shortcut-name">GitHub</div>
+            </a>
+            <a href="https://perplexity.ai" class="shortcut">
+                <div class="shortcut-icon">🌐</div>
+                <div class="shortcut-name">Perplexity</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // الساعة
+        function updateTime() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('time').textContent = h + ':' + m;
+
+            const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+            const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+            document.getElementById('date').textContent =
+                days[now.getDay()] + '، ' + now.getDate() + ' ' + months[now.getMonth()];
+        }
+
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>
